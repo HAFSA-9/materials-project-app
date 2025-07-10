@@ -1,2 +1,4 @@
 streamlit
 mp-api
+mp-api==0.35.1
+
