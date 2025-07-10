@@ -1,0 +1,84 @@
+import streamlit as st
+from mp_api.client import MPRester
+
+# --- Streamlit Page Configuration ---
+st.set_page_config(
+    page_title="Materials Project Data Viewer",
+    page_icon="🔬",
+    layout="centered"
+)
+
+st.title("Materials Project Data Viewer")
+st.write("Retrieve and display materials data from the Materials Project API.")
+
+# --- API Key Handling (Streamlit Secrets) ---
+# This part reads the API key from Streamlit's secure secrets management.
+# For local running, it reads from .streamlit/secrets.toml
+# For Streamlit Cloud deployment, you set this secret in the app's settings on the Cloud dashboard.
+try:
+    api_key = st.secrets["MP_API_KEY"]
+    st.success("API Key successfully loaded from Streamlit secrets.")
+except KeyError:
+    st.error(
+        "MP_API_KEY not found in Streamlit secrets. "
+        "Please add it to your `.streamlit/secrets.toml` file (for local testing) "
+        "or Streamlit Cloud secrets (for deployment)."
+    )
+    api_key = None # Set api_key to None if not found
+
+# --- Initialize MPRester client ---
+mpr = None
+if api_key:
+    try:
+        mpr = MPRester(api_key)
+        st.success("Successfully connected to Materials Project API!")
+    except Exception as e:
+        st.error(f"Error initializing MPRester: {e}")
+
+# --- User Input for Formula ---
+st.header("Search Materials Data")
+formula_input = st.text_input("Enter Material Formula (e.g., Si, Li, Fe2O3):", "Si")
+
+# --- Query Materials Project API and Display Results ---
+if mpr and formula_input:
+    st.subheader(f"Results for '{formula_input}'")
+    try:
+        # Perform the API search
+        docs = mpr.materials.summary.search(
+            formula=formula_input,
+            fields=["material_id", "formula_pretty", "band_gap", "density", "formation_energy_per_atom", "volume"]
+        )
+
+        if docs:
+            st.write(f"Successfully retrieved data for **{formula_input}**:")
+            # Displaying a table of results
+            # You might want to display more elegantly for multiple results
+            # For simplicity, let's show the first few key properties
+            
+            for i, doc in enumerate(docs[:5]): # Display up to first 5 results
+                st.write(f"--- **Result {i+1}** ---")
+                st.write(f"**Material ID:** `{doc.get('material_id', 'N/A')}`")
+                st.write(f"**Formula:** **{doc.get('formula_pretty', 'N/A')}**")
+                st.write(f"**Band Gap:** {doc.get('band_gap', 'N/A')} eV")
+                st.write(f"**Density:** {doc.get('density', 'N/A')} g/cm³")
+                st.write(f"**Formation Energy per Atom:** {doc.get('formation_energy_per_atom', 'N/A')} eV/atom")
+                st.write(f"**Volume:** {doc.get('volume', 'N/A')} Å³")
+                
+            if len(docs) > 5:
+                st.info(f"Displaying first 5 results out of {len(docs)} found. Refine your search for more specific results.")
+
+            st.success("Data retrieval from Materials Project API successful!")
+        else:
+            st.warning(f"Could not retrieve data for the formula '{formula_input}'. Please check the formula or try another.")
+
+    except Exception as e:
+        st.error(f"An error occurred during data retrieval: {e}")
+        st.info("Ensure your API key is correct and you have an internet connection.")
+else:
+    if not mpr:
+        st.info("Please ensure your API key is correctly set up in Streamlit secrets to search for materials.")
+    else:
+        st.info("Enter a material formula above to search the Materials Project database.")
+
+st.markdown("---")
+st.caption("Powered by Streamlit and Materials Project API")
