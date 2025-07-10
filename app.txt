@@ -1,0 +1,47 @@
+import streamlit as st
+from mp_api.client import MPRester
+
+st.set_page_config(page_title="Material Property Explorer", layout="centered")
+
+st.title("🔬 Material Property Explorer")
+st.markdown("Enter a material formula or symbol to fetch basic properties from the Materials Project database.")
+
+# Get user input
+material = st.text_input("Material formula (e.g., Li, Mg, CrTe2):")
+
+# When user enters material
+if material:
+    try:
+        with MPRester("YOUR_API_KEY_HERE") as mpr:  # Replace with your real API key
+            results = mpr.materials.summary.search(
+                formula=material,
+                fields=[
+                    "material_id", "formula_pretty", "band_gap", "formation_energy_per_atom",
+                    "e_above_hull", "density", "volume", "nsites", "magnetic_ordering",
+                    "total_magnetization", "spacegroup.symbol", "spacegroup.crystal_system",
+                    "is_stable"
+                ]
+            )
+
+            if results:
+                data = results[0]
+                st.success(f"Results for {data.formula_pretty} (Material ID: {data.material_id})")
+
+                st.markdown("### 🔍 Basic Properties:")
+                st.write({
+                    "Band Gap (eV)": data.band_gap,
+                    "Formation Energy (eV/atom)": data.formation_energy_per_atom,
+                    "E Above Hull (eV)": data.e_above_hull,
+                    "Density (g/cm³)": data.density,
+                    "Volume (Å³)": data.volume,
+                    "Number of Sites": data.nsites,
+                    "Magnetic Ordering": data.magnetic_ordering,
+                    "Total Magnetization": data.total_magnetization,
+                    "Spacegroup": data.spacegroup.symbol,
+                    "Crystal System": data.spacegroup.crystal_system,
+                    "Is Stable": data.is_stable
+                })
+            else:
+                st.warning("No results found. Please try another material.")
+    except Exception as e:
+        st.error(f"Something went wrong: {e}")
