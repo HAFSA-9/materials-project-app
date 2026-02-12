@@ -3,7 +3,7 @@ from mp_api.client import MPRester
 from pymatgen.core import Composition
 
 # Streamlit app settings
-st.set_page_config(page_title="🔬 Material Property Explorer", layout="centered")
+st.set_page_config(page_title="Material Property Explorer", layout="centered")
 st.title("🔬 Material Property Explorer")
 st.markdown("Enter a material formula or symbol to fetch basic properties from the Materials Project database.")
 
@@ -21,7 +21,7 @@ if material:
 
         if results:
             summary = results[0]
-            st.subheader(f"🔍 Properties for: {summary.formula_pretty}")
+            st.subheader(f"Properties for: {summary.formula_pretty}")
             st.markdown(f"**Material ID:** `{summary.material_id}`")
             st.markdown(f"**Band Gap:** `{summary.band_gap} eV`")
             st.markdown(f"**Density:** `{summary.density:.2f} g/cm³`")
@@ -38,9 +38,10 @@ if material:
                 st.markdown(f"**Space Group Symbol:** `{summary.symmetry.symbol}`")
                 st.markdown(f"**Space Group Number:** `{summary.symmetry.number}`")
             except Exception as symm_error:
-                st.warning(f"ℹ️ Symmetry data not available: {symm_error}")
+                st.warning(f"Symmetry data not available: {symm_error}")
 
         else:
-            st.warning("⚠️ No results found for the entered formula.")
+            st.warning("No results found for the entered formula.")
     except Exception as e:
         st.error(f"❌ Error fetching data: {e}")
+
