@@ -4,7 +4,7 @@ from pymatgen.core import Composition
 
 # Streamlit app settings
 st.set_page_config(page_title="Material Property Explorer", layout="centered")
-st.title("🔬 Material Property Explorer")
+st.title("Material Property Explorer")
 st.markdown("Enter a material formula or symbol to fetch basic properties from the Materials Project database.")
 
 # Input field
@@ -44,4 +44,5 @@ if material:
             st.warning("No results found for the entered formula.")
     except Exception as e:
         st.error(f"❌ Error fetching data: {e}")
+
 
