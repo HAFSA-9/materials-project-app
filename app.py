@@ -43,6 +43,7 @@ if material:
         else:
             st.warning("No results found for the entered formula.")
     except Exception as e:
-        st.error(f"❌ Error fetching data: {e}")
+        st.error(f"Error fetching data: {e}")
+
 
 
